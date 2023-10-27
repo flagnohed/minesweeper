@@ -128,10 +128,10 @@ class Painter:
         LIGHT_SLATE_GREY = (119,136,153)
         RED = (220, 20, 60)
         BLACK = (0, 0, 0)
-        font = pygame.font.SysFont('calibri', 14)  
+        font = pygame.font.SysFont('calibri', 18)  
         self.screen.fill(0)
         RESTART_TEXT = "click 'r' to restart"
-        bombs_marked_text = f"bombs marked: {self.board.marked_bombs_count}/{self.board.bombs}"
+        bombs_marked_text = f"bombs left: {self.board.bombs - self.board.marked_bombs_count}/{self.board.bombs}"
         
         text = font.render(bombs_marked_text, True, LIGHT_SLATE_GREY)
         text_rect = text.get_rect()
@@ -143,7 +143,7 @@ class Painter:
             text_rect = text.get_rect()
             text_rect.center = (100, self.start_height - 40)
             self.screen.blit(text, text_rect)
-        pygame.display.flip()
+        # pygame.display.flip()
         # draw grid
         for row in self.board.grid:
             
@@ -184,9 +184,11 @@ def main():
     width, height = 592, 800
     screen = pygame.display.set_mode((width, height))
     pygame.display.set_caption("Minesweeper")
+
     running = True
     bombs = 40
     tiles = (16, 16)
+
     b = Board(bombs, tiles)
     p = Painter(b, screen)
 
