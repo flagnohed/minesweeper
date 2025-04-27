@@ -18,19 +18,19 @@ class Tile:
         self.r, self.c = pos
         self.adjacent_bombs = number
         self.is_bomb = is_bomb
-        
+
         self.is_flagged = False
         self.is_revealed = False
 
 
 class Board:
     def __init__(self, bombs: int, tiles: tuple):
-        self.bombs = bombs 
+        self.bombs = bombs
         self.rows, self.cols = tiles  # e.g. (16, 16)
 
-        self.grid = []      # list<list<Tile>>>
+        self.grid = []  # list<list<Tile>>>
         self.bomb_pos = []  # list<tuple<int, int>>
-       
+
         self.has_bomb_visible = False
         self.marked_bombs_count = 0
 
@@ -45,7 +45,7 @@ class Board:
 
     def get_tile(self, r: int, c: int):
         return self.grid[r][c]
-    
+
     def get_adjacent_pos(self, r: int, c: int):
         adjacent_pos = []
 
@@ -57,7 +57,7 @@ class Board:
         adjacent_pos.remove((r, c))
 
         return adjacent_pos
-        
+
     def count_adjacent_bombs(self, r: int, c: int):
         counter = 0
 
@@ -68,7 +68,7 @@ class Board:
 
     def construct_grid(self):
         self.make_bomb_positions()
-        
+
         for r in range(self.rows):
             grid_row = []
             for c in range(self.cols):
@@ -82,7 +82,7 @@ class Board:
                 grid_row += [t]
             self.grid += [grid_row]
         print("Grid constructed.")
-    
+
     def clear_blanks(self, r: int, c: int):
         for r, c in self.get_adjacent_pos(r, c):
             t = self.get_tile(r, c)
@@ -99,7 +99,7 @@ class Board:
         else:
             self.marked_bombs_count -= 1
 
-        
+
 class Painter:
     def __init__(self, board: Board, screen: pygame.Surface):
         self.board = board
@@ -118,21 +118,20 @@ class Painter:
             exit()
 
         return self.board.get_tile(r, c)
-    
+
     def is_grid_clicked(self, y):
         return self.start_height < y
 
-
     def draw_board(self):
-        """ main drawing loop """
-        LIGHT_SLATE_GREY = (119,136,153)
+        """main drawing loop"""
+        LIGHT_SLATE_GREY = (119, 136, 153)
         RED = (220, 20, 60)
         BLACK = (0, 0, 0)
-        font = pygame.font.SysFont('calibri', 18)  
+        font = pygame.font.SysFont("calibri", 18)
         self.screen.fill(0)
         RESTART_TEXT = "click 'r' to restart"
         bombs_marked_text = f"bombs left: {self.board.bombs - self.board.marked_bombs_count}/{self.board.bombs}"
-        
+
         text = font.render(bombs_marked_text, True, LIGHT_SLATE_GREY)
         text_rect = text.get_rect()
         text_rect.center = (100, self.start_height - 10)
@@ -146,7 +145,7 @@ class Painter:
         # pygame.display.flip()
         # draw grid
         for row in self.board.grid:
-            
+
             for col in range(self.board.cols):
                 text = font.render("", True, LIGHT_SLATE_GREY)
                 color = LIGHT_SLATE_GREY
@@ -156,13 +155,13 @@ class Painter:
                     color = RED
 
                 tile_x = tile.c * self.tile_size
-                tile_y = self.start_height + tile.r*self.tile_size
+                tile_y = self.start_height + tile.r * self.tile_size
 
                 # draw tile background
-                t = pygame.Rect(tile_x, tile_y, self.tile_size, self.tile_size), 
-                w = (int) (not tile.is_revealed)  # 0 --> fill, 1 --> border
+                t = (pygame.Rect(tile_x, tile_y, self.tile_size, self.tile_size),)
+                w = (int)(not tile.is_revealed)  # 0 --> fill, 1 --> border
                 pygame.draw.rect(self.screen, color, t, width=w)
-                
+
                 # mark number on revealed + non bomb tile
                 if not tile.is_bomb and tile.is_revealed and tile.adjacent_bombs:
                     text = font.render(str(tile.adjacent_bombs), True, BLACK)
@@ -170,14 +169,17 @@ class Painter:
                 # mark 'B' as bomb flags
                 if not tile.is_revealed and tile.is_flagged:
                     text = font.render("B", True, LIGHT_SLATE_GREY)
-                
+
                 # put marking on tile
                 text_rect = text.get_rect()
-                text_rect.center = (tile_x + self.tile_size // 2, tile_y + self.tile_size // 2)
+                text_rect.center = (
+                    tile_x + self.tile_size // 2,
+                    tile_y + self.tile_size // 2,
+                )
                 self.screen.blit(text, text_rect)
-                    
-        
+
         pygame.display.flip()
+
 
 def main():
     pygame.init()
@@ -193,26 +195,35 @@ def main():
     p = Painter(b, screen)
 
     while running:
-    
+
         for e in pygame.event.get():
             x, y = pygame.mouse.get_pos()
-            LEFT_CLICK = (e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and p.is_grid_clicked(y))
-            RIGHT_CLICK = (e.type == pygame.MOUSEBUTTONDOWN and e.button == 3 and p.is_grid_clicked(y))
-            RESTART = (e.type == pygame.KEYDOWN and e.key == pygame.K_r and b.has_bomb_visible)
-            
+            LEFT_CLICK = (
+                e.type == pygame.MOUSEBUTTONDOWN
+                and e.button == 1
+                and p.is_grid_clicked(y)
+            )
+            RIGHT_CLICK = (
+                e.type == pygame.MOUSEBUTTONDOWN
+                and e.button == 3
+                and p.is_grid_clicked(y)
+            )
+            RESTART = (
+                e.type == pygame.KEYDOWN and e.key == pygame.K_r and b.has_bomb_visible
+            )
 
             if e.type == pygame.QUIT:
                 running = False
 
             elif RESTART:
                 main()
-            
+
             elif LEFT_CLICK:
                 clicked = p.get_clicked_tile(x, y)
 
                 if not clicked.is_revealed:
                     clicked.is_revealed = True
-                    
+
                 if not clicked.adjacent_bombs and not clicked.is_bomb:
                     b.clear_blanks(clicked.r, clicked.c)
 
@@ -224,10 +235,11 @@ def main():
 
                 if not clicked.is_revealed:
                     b.toggle_flag(clicked)
-                    
+
         p.draw_board()
-    
+
     pygame.quit()
+
 
 if __name__ == "__main__":
     main()
